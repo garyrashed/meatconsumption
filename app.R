@@ -10,6 +10,7 @@
 
 library(shiny)
 library(dplyr)
+library(ggplot2)
 library(leaflet)
 library(shinydashboard)
 
@@ -22,7 +23,6 @@ ui <- dashboardPage(
         dashboardSidebar(
             sidebarUserPanel(
                 name = 'Gary Rashed',
-                subtitle = '',
                 image = 'MEDIUM.png'
             ),
             sidebarMenu(
@@ -40,9 +40,9 @@ ui <- dashboardPage(
         sidebarLayout(
             sidebarPanel(
                 selectInput(
-                    inputId = "countryId",
+                    inputId = "countryName",
                     label = strong("Country"),
-                    choices = unique(fullData$Country)
+                    choices = unique(fullData$CountryName )
                 ) ,
                 
                 sliderInput(
@@ -60,7 +60,9 @@ ui <- dashboardPage(
                     tabPanel("Map of Meat Consumption"),
                     tabPanel("Country Breakdown."),
                     tabPanel("Year over year breakdown.")
-                )
+                ),
+                plotOutput("CountryConsumption")
+                
             )
         )
     )
@@ -111,6 +113,20 @@ ui <- dashboardPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
+    
+    output$CountryConsumption<-renderPlot({
+        startingDate = as.integer(format(input$dateRange[1], '%Y'))
+        endingDate = as.integer(format(input$dateRange[2], '%Y'))
+        print(startingDate)
+        #endingDate = as.Date(format(input$dateRange[2], '%Y'))
+        country = input$countryName
+        
+        countryData = fullData %>%  filter(., CountryName == country & YearTime >= startingDate & YearTime <= endingDate)
+ 
+        ggplot(countryData, aes(x = YearTime, y = MeatValue)) +
+            geom_point(mapping = aes(color = Subj)) +
+            ggtitle("adfa")
+    })
 }
 
 # Run the application
